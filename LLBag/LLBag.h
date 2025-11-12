@@ -35,7 +35,6 @@ template<typename U>class LLContainer;
 template<typename T> class Node
 {
 private:
-	Node* current_node{ nullptr };
 	Node* prev_node{ nullptr };
 	Node* next_node{ nullptr };
 	T node_data{};
@@ -75,33 +74,38 @@ private:
 	size_t global_index{ 0 };
 
 public:
-	LLContainer() :header_ptr{ new Node<U>() }
-	{
-		++container_size;
-		if (!header_ptr)throw LLException(LLbad_pointer);
-		else 
-		{
-			header_ptr->index = global_index;
-			++global_index;
-			header_ptr->current_node = header_ptr;
-			tail_ptr = header_ptr;
-		}
-	}
-	LLContainer(U header_init) :header_ptr{ new Node<U>(header_init) }
+	LLContainer() :header_ptr{ new Node<U>() }, tail_ptr{ new Node<U>() }
 	{
 		container_size = 2;
-		if (!header_ptr)throw LLException(LLbad_pointer);
+		if (!header_ptr || !tail_ptr)throw LLException(LLbad_pointer);
 		else
 		{
-			header_ptr->current_node = header_ptr;
 			header_ptr->index = global_index;
-			
 			++global_index;
-			
-			tail_ptr = new Node<U>();
-			tail_ptr->current_node = tail_ptr;
 			tail_ptr->index = global_index;
+
+			header_ptr->prev_node = nullptr;
+			header_ptr->next_node = tail_ptr;
+
 			tail_ptr->prev_node = header_ptr;
+			tail_ptr->next_node = nullptr;
+		}
+	}
+	LLContainer(U header_init) :header_ptr{ new Node<U>(header_init) }, tail_ptr{ new Node<U>() }
+	{
+		container_size = 2;
+		if (!header_ptr || !tail_ptr)throw LLException(LLbad_pointer);
+		else
+		{
+			header_ptr->index = global_index;
+			++global_index;
+			tail_ptr->index = global_index;
+
+			header_ptr->prev_node = nullptr;
+			header_ptr->next_node = tail_ptr;
+
+			tail_ptr->prev_node = header_ptr;
+			tail_ptr->next_node = nullptr;
 		}
 	}
 
@@ -124,22 +128,17 @@ public:
 		}
 	}
 
-	void push_back(Node what)
+	void push_back(U what)
 	{
-		if (container_size == 1)
-		{
-			++global_index;
-			++container_size;
+		Node<U>* new_tail{ new (Node<U>(what)) };
 
-			tail_ptr = new Node<U>();
-			tail_ptr->current_node = tail_ptr;
-			tail_ptr->index = global_index;
-			tail_ptr->prev_node = header_ptr;
-			tail_ptr->node_data = what.node_data;
-			return;
-		}
+		++global_index;
 
+		new_tail->prev_node = tail_ptr;
+		new_tail->next_node = nullptr;
+		new_tail->index = global_index;
 
+		tail_ptr = new_tail;
 	}
 
 
