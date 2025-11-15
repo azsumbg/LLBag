@@ -70,13 +70,11 @@ template<typename U>class LLContainer
 private:
 	Node<U>* header_ptr{ nullptr };
 	Node<U>* tail_ptr{ nullptr };
-	size_t container_size{ 0 };
 	size_t global_index{ 0 };
 
 public:
 	LLContainer() :header_ptr{ new Node<U>() }, tail_ptr{ new Node<U>() }
 	{
-		container_size = 2;
 		if (!header_ptr || !tail_ptr)throw LLException(LLbad_pointer);
 		else
 		{
@@ -93,7 +91,6 @@ public:
 	}
 	LLContainer(U header_init) :header_ptr{ new Node<U>(header_init) }, tail_ptr{ new Node<U>() }
 	{
-		container_size = 2;
 		if (!header_ptr || !tail_ptr)throw LLException(LLbad_pointer);
 		else
 		{
@@ -111,13 +108,13 @@ public:
 
 	~LLContainer()
 	{
-		if (container_size > 0)
+		if (global_index >= 0)
 		{
-			if (container_size > 1)
+			if (global_index >= 1)
 			{
 				Node* next_to_delete{ tail_ptr };
 
-				for (size_t count = container_size - 1; count >= 0; --count)
+				for (size_t count = global_index - 1; count >= 0; --count)
 				{
 					Node* temp{ next_to_delete->prev_node };
 					delete next_to_delete;
@@ -128,8 +125,15 @@ public:
 		}
 	}
 
+	size_t size() const
+	{
+		return global_index;
+	}
+
 	void push_back(U what)
 	{
+		if (!tail_ptr)throw(LLException(LLbad_tail));
+
 		Node<U>* new_tail{ new (Node<U>(what)) };
 
 		++global_index;
@@ -139,8 +143,59 @@ public:
 		new_tail->index = global_index;
 
 		tail_ptr = new_tail;
-	}
 
+		if (!new_tail)throw(LLException(LLbad_tail));
+	}
+	void push_front(U what)
+	{
+		if (!header_ptr)throw(LLException(LLbad_header));
+		if (!tail_ptr)throw(LLException(LLbad_tail));
+
+
+		Node<U>* temp{ new Node<U>(what) };
+
+		temp->prev_node = nullptr;
+		temp->next_node = header_ptr;
+
+		header_ptr->prev_node = temp;
+
+		header_ptr = temp;
+	}
+	void insert(size_t index, U what)
+	{
+		if (index < 0 || index > global_index)throw(LLException(LLBadIndex));
+		
+		if (index == 0)
+		{
+			push_front(what);
+			return;
+		}
+
+		Node<U>* temp{ new Node<U>(what) };
+
+		Node* current_element = header_ptr;
+
+		for (size_t count = 0; count <= global_index; ++count)
+		{
+			if (current_element->index == index)
+			{
+				temp->prev_node = current_element->prev_node;
+				temp->next_node = current_element;
+				temp->index = current_element->index;
+				
+				current_element->prev_node = temp;
+
+				Node<U>* element_to_update = current_element;
+				for (size_t i = count; i < global_index; ++i)
+				{
+					++element_to_update->index;
+					element_to_update = element_to_update->next_node;
+				}
+				break;
+			}
+		}
+		
+	}
 
 };
 
