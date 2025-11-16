@@ -12,6 +12,7 @@ constexpr int LLbad_pointer{ 5001 };
 constexpr int LLbad_index{ 5002 };
 constexpr int LLbad_header{ 5003 };
 constexpr int LLbad_tail{ 5004 };
+constexpr int LLunknown_error{ 5005 };
 
 class LLBAG_API LLException
 {
@@ -21,6 +22,7 @@ private:
 	LPCWSTR bad_index{ L"Out of bounds index passed\nto LLBag container function!" };
 	LPCWSTR bad_header{ L"Bad header information passed\nto LLBag container function!" };
 	LPCWSTR bad_tail{ L"Bad tail information passed\nto LLBag container function!" };
+	LPCWSTR unknown_error{ L"Unknown error occurred\nin LLBag container function!" };
 
 public:
 
@@ -134,7 +136,7 @@ public:
 	{
 		if (!tail_ptr)throw(LLException(LLbad_tail));
 
-		Node<U>* new_tail{ new (Node<U>(what)) };
+		Node<U>* new_tail{ new Node<U>(what) };
 
 		++global_index;
 
@@ -163,7 +165,7 @@ public:
 	}
 	void insert(size_t index, U what)
 	{
-		if (index < 0 || index > global_index)throw(LLException(LLBadIndex));
+		if (index < 0 || index > global_index)throw(LLException(LLbad_index));
 		
 		if (index == 0)
 		{
@@ -186,15 +188,61 @@ public:
 				current_element->prev_node = temp;
 
 				Node<U>* element_to_update = current_element;
-				for (size_t i = count; i < global_index; ++i)
+				for (size_t i = count + 1; i < global_index; ++i)
 				{
 					++element_to_update->index;
 					element_to_update = element_to_update->next_node;
 				}
 				break;
+
+				++global_index;
 			}
 		}
 		
+	}
+
+	Node<U>& operator[](size_t index)
+	{
+		if (!header_ptr)throw LLException(LLbad_header);
+		if (index < 0 || index > global_index)throw(LLException(LLbad_index));
+
+		Node<U>* current_node = header_ptr;
+
+		for (size_t count = 0; count <= global_index; ++count)
+		{
+			if (current_node->index == index)return *current_node;
+			else current_node = current_node->next_node;
+		}
+		
+	}
+
+	void erase(size_t index)
+	{
+		if (!header_ptr)throw LLException(LLbad_header);
+		if (index < 0 || index>global_index)throw LLException(LLbad_index);
+
+		Node<U>* item{ header_ptr };
+
+		for (size_t item_to_erase = 0; item_to_erase <= global_index; ++item_to_erase)
+		{
+			if (item->index == index)
+			{
+				Node<U>* prev_item = item->prev_node;
+				Node<U>* next_item = item->next_node;
+
+				prev_item->next_node = next_item;
+				next_item->prev_node = prev_item;
+
+				delete item;
+
+				for (size_t count = index + 1; count <= global_index; ++count)
+				{
+					--next_item->index;
+					next_item = next_item->next_node;
+				}
+			}
+			else item = item->next_node;
+		}
 	}
 
 };

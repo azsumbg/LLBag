@@ -25,6 +25,8 @@ LPCWSTR LLException::GetError() const
 		return bad_tail;
 
 	}
+
+	return LLunknown_error;
 }
 
 ///////////////////////////////////////////
