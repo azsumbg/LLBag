@@ -26,7 +26,7 @@ LPCWSTR LLException::GetError() const
 
 	}
 
-	return LLunknown_error;
+	return unknown_error;
 }
 
 ///////////////////////////////////////////

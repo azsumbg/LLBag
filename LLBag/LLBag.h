@@ -37,8 +37,8 @@ template<typename U>class LLContainer;
 template<typename T> class Node
 {
 private:
-	Node* prev_node{ nullptr };
-	Node* next_node{ nullptr };
+	Node<T>* prev_node{ nullptr };
+	Node<T>* next_node{ nullptr };
 	T node_data{};
 	size_t index{ 0 };
 
@@ -51,11 +51,11 @@ public:
 	{
 		return node_data;
 	}
-	Node* GetPrevNode() const
+	Node<T>* GetPrevNode() const
 	{
 		return prev_node;
 	}
-	Node* GetNextNode() const
+	Node<T>* GetNextNode() const
 	{
 		return next_node;
 	}
@@ -114,11 +114,11 @@ public:
 		{
 			if (global_index >= 1)
 			{
-				Node* next_to_delete{ tail_ptr };
+				Node<U>* next_to_delete{ tail_ptr };
 
-				for (size_t count = global_index - 1; count >= 0; --count)
+				for (size_t count = global_index - 1; count >= 1; --count)
 				{
-					Node* temp{ next_to_delete->prev_node };
+					Node<U>* temp{ next_to_delete->prev_node };
 					delete next_to_delete;
 					next_to_delete = temp;
 				}
@@ -143,6 +143,8 @@ public:
 		new_tail->prev_node = tail_ptr;
 		new_tail->next_node = nullptr;
 		new_tail->index = global_index;
+
+		tail_ptr->next_node = new_tail;
 
 		tail_ptr = new_tail;
 
@@ -208,9 +210,9 @@ public:
 
 		Node<U>* current_node = header_ptr;
 
-		for (size_t count = 0; count <= global_index; ++count)
+		for (size_t count = 0; count < global_index; ++count)
 		{
-			if (current_node->index == index)return *current_node;
+			if (current_node->index == index)return (*current_node);
 			else current_node = current_node->next_node;
 		}
 		
