@@ -41,7 +41,7 @@ private:
 	Node<T>* next_node{ nullptr };
 	T node_data{};
 	size_t index{ 0 };
-
+	
 public:
 	Node() {};
 	Node(T header_data) :node_data{ header_data } {};
@@ -73,6 +73,9 @@ private:
 	Node<U>* header_ptr{ nullptr };
 	Node<U>* tail_ptr{ nullptr };
 	size_t global_index{ 0 };
+
+	bool header_initialized{ false };
+	bool tail_initialized{ false };
 
 public:
 	LLContainer() :header_ptr{ new Node<U>() }, tail_ptr{ new Node<U>() }
@@ -106,6 +109,7 @@ public:
 			tail_ptr->prev_node = header_ptr;
 			tail_ptr->next_node = nullptr;
 		}
+		header_initialized = true;
 	}
 
 	~LLContainer()
@@ -123,7 +127,7 @@ public:
 					next_to_delete = temp;
 				}
 			}
-			else delete header_ptr;;
+			else delete header_ptr;
 		}
 	}
 
@@ -134,7 +138,22 @@ public:
 
 	void push_back(U what)
 	{
+		if (!header_ptr)throw(LLException(LLbad_header));
 		if (!tail_ptr)throw(LLException(LLbad_tail));
+
+		if (!header_initialized)
+		{
+			header_ptr->node_data = what;
+			header_initialized = true;
+			return;
+		}
+		else if (!tail_initialized)
+		{
+			tail_ptr->node_data = what;
+			tail_initialized = true;
+			return;
+		}
+
 
 		Node<U>* new_tail{ new Node<U>(what) };
 
@@ -155,6 +174,12 @@ public:
 		if (!header_ptr)throw(LLException(LLbad_header));
 		if (!tail_ptr)throw(LLException(LLbad_tail));
 
+		if (!header_initialized)
+		{
+			header_ptr->node_data = what;
+			header_initialized = true;
+			return;
+		}
 
 		Node<U>* temp{ new Node<U>(what) };
 
