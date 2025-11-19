@@ -235,41 +235,47 @@ public:
 
 		Node<U>* current_node = header_ptr;
 
-		for (size_t count = 0; count < global_index; ++count)
+		for (size_t count = 0; count <= global_index; ++count)
 		{
 			if (current_node->index == index)return (*current_node);
-			else current_node = current_node->next_node;
+			else if (current_node->next_node != nullptr)current_node = current_node->next_node;
 		}
-		
+
+		return (*current_node);
 	}
 
 	void erase(size_t index)
 	{
 		if (!header_ptr)throw LLException(LLbad_header);
-		if (index < 0 || index>global_index)throw LLException(LLbad_index);
+		if (index < 0 || index > global_index)throw LLException(LLbad_index);
 
 		Node<U>* item{ header_ptr };
 
 		for (size_t item_to_erase = 0; item_to_erase <= global_index; ++item_to_erase)
 		{
-			if (item->index == index)
+			if (item)
 			{
-				Node<U>* prev_item = item->prev_node;
-				Node<U>* next_item = item->next_node;
-
-				prev_item->next_node = next_item;
-				next_item->prev_node = prev_item;
-
-				delete item;
-
-				for (size_t count = index + 1; count <= global_index; ++count)
+				if (item->index == index)
 				{
-					--next_item->index;
-					next_item = next_item->next_node;
+					Node<U>* prev_item = item->prev_node;
+					Node<U>* next_item = item->next_node;
+
+					if (prev_item)prev_item->next_node = next_item;
+					if (next_item)next_item->prev_node = prev_item;
+
+					delete item;
+
+					for (size_t count = index + 1; count <= global_index; ++count)
+					{
+						if (next_item)--next_item->index;
+						next_item = next_item->next_node;
+					}
+					break;
 				}
+				else item = item->next_node;
 			}
-			else item = item->next_node;
 		}
+		--global_index;
 	}
 
 };
